@@ -1,0 +1,30 @@
+program read_write;
+	begin
+		num num1;
+		num num2 = 3;		
+		num num3 = num2;  //num3 = 3
+		num3 = num3 + 10; //num3 = 13
+		num2 = num3 + num2; //num2 = 16 = 13 + 3
+
+		num1 = 2 * 5;    //num1 = 10
+
+		num1 = num3 * num2;  //num1 = 208 = 13 * 16
+
+		num2 = 8 - 5; //num2 = 3
+		num2 = 8 - 5; //num2 = 3
+
+		num3 = 8^6;  //num3 = 262144
+
+		write "Basics.txt:";
+		write num1;  //this should be 208
+		write num2;  //this should be 3
+		write num3;  //this should be 262144 		
+		write "Enter a number:";
+		num myNum;
+		read myNum;
+		write "The number is:";
+		write myNum;	
+		write "The number is:";
+		myNum = myNum + 6;
+		write myNum;	
+	end.

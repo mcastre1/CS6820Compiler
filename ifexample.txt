@@ -1,0 +1,23 @@
+program ifExample; 
+	begin
+		num bob1 = 3;
+		if bob1 == 3 then 
+		{
+			write bob1;
+		}
+
+		num bob2 = 5;
+		if bob1 != bob2 then //NOTE: the relational operators are: !=, ==, >, <, >=, <=
+		{
+			if 5 > 6 then 
+			{
+				write "5 > 6";
+			}
+			write "bob1 != bob2";
+		}
+		else
+		{
+			write "bob1 == bob2";
+		}
+		
+	end.

@@ -1,0 +1,24 @@
+program caseExample;
+	begin
+		num bob = 3;
+		switch (bob)
+		{
+			case 1:
+			{
+				write "this is not it";
+			}
+			case 2:
+			{
+				write "this is not it either";
+			}
+			case 3:
+			{
+				write "This is it.";
+			}
+			default:
+			{
+				write "Why did I not find it?";
+			}
+		}
+                write "This is after the case.";
+	end.

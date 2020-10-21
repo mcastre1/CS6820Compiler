@@ -1,0 +1,28 @@
+program procedureTry;
+	begin
+		procedure changeNum1 (num passIn)
+		{
+			write "before was 3";
+			write passIn;
+			write "passIn = 5";
+			passIn = 5;
+			write passIn;
+		}
+		procedure changeNum2 (num *passIn)
+		{
+			write "before was 3";
+			write passIn;
+			write "passIn = 5";
+			passIn = 5;
+			write passIn;
+		}
+
+		num bob = 3;
+		changeNum1(bob);
+		write "bob = 3";
+		write bob;
+
+		changeNum2(bob);
+		write "bob = 5";
+		write bob;
+	end.

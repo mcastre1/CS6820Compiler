@@ -1,0 +1,9 @@
+program SampleAE;
+    begin
+		num X = 3;
+		num Y = 4;
+		num Z = 5;
+		num result = (4 ^ 2);
+		write "ae.txt:";
+		write result;
+    end.
