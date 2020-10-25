@@ -461,6 +461,14 @@ def main():
                                  "imul edi, 4\n"+
                                  "add edi, {}\n".format(variable)+
                                  "mov	DWORD[edi],	{}\n".format(value))
+                        print(f"{ks} ks")
+                        print(f"{lowerBounds} lb")
+                        print(f"{deltas} d")
+                        print(f"{indexes} is")
+                        print(relFactor)
+                        print(offset)
+                        
+                        
                         
             elif(re.search(".+\s.+", i)): #This will also match the ones above, need a better way of handling it... oops
                 #print("INDISE")
@@ -488,14 +496,16 @@ def main():
                         ks = []  #Ks for each of the index bounds
                         deltas = [] #deltas for each index
                         lowerBounds = [] #lowerbounds of index, first number
-                        
+                        #print(i)
                         ks = findKs(variableName)
                         lowerBounds = findLowerBounds(variableName)
                         deltas = findDeltas(ks)
                         relFactor = findFactors(deltas, lowerBounds)
+                        print(relFactor)
                         
                         fp.write("xor edi, edi\n")
                         indexes = rightSide.split("[")[1][:-1].split(",")
+                        print(indexes)
                         for n in range(len(indexes)):
                             fp.write("mov esi, {}\n".format(deltas[n])+
                                      "imul esi, {}\n".format(indexes[n])+
@@ -508,6 +518,15 @@ def main():
                                  "push numberPrinter\n"+
                                  "call _printf\n"+
                                  "add esp, 0x08\n")
+                        
+                        print("-----------------")
+                        print(variableName)
+                        print(ks)
+                        print(lowerBounds)
+                        print(deltas)
+                        print(relFactor)
+                        print(indexes)
+                        print("-------------")
                     else:
                         print("Variable: {}, not found in system".format(variableName))  
                         

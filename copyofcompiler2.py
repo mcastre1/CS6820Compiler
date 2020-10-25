@@ -177,9 +177,7 @@ def run(fileIn, fileOut):
                 ifstack.pop()
 
     ifcount = 0
-
-    for i in VARS:
-        print(i)
+    
 ############PRINTING OUT TO FILE OUT#############
     with open(fileOut, 'w') as fo:
         #Writing export header.
@@ -279,183 +277,177 @@ def run(fileIn, fileOut):
                             fo.write("mov edi, {}\n".format(rightSide)+
                                      "mov DWORD[{}], edi\n\n".format(varName))
                 elif(re.search(SETVAR_EQUALTO, leftSide)):
-                    if(not procedure):
-                        global Exp_Count
-                        global forLoopCount
-                        global bracketsIn
-                        global elseCount
-                        varName = i.split("=")[0].strip()
-                        #print(varName)
-                        if('-' in rightSide or '+' in rightSide or '^' in rightSide or '*' in rightSide):
-                            postFix = cPostFix.infixToPostfix(rightSide)
-                            #print(postFix)
-                            operators = ['-', '+', '*', '/', '^']
-                            temp1 = False
-                            temp2 = False
-                            temp3 = False
-                            temp4 = False
+                    global Exp_Count
+                    global forLoopCount
+                    global bracketsIn
+                    global elseCount
+                    varName = i.split("=")[0].strip()
+                    #print(varName)
+                    if('-' in rightSide or '+' in rightSide or '^' in rightSide or '*' in rightSide):
+                        postFix = cPostFix.infixToPostfix(rightSide)
+                        #print(postFix)
+                        operators = ['-', '+', '*', '/', '^']
+                        temp1 = False
+                        temp2 = False
+                        temp3 = False
+                        temp4 = False
 
-                            while(not len(postFix) == 0):
-                                for index, v in enumerate(postFix):
-                                    if(v in operators):
-                                        fOI = index - 2
-                                        sOI = index - 1
+                        while(not len(postFix) == 0):
+                            for index, v in enumerate(postFix):
+                                if(v in operators):
+                                    fOI = index - 2
+                                    sOI = index - 1
 
-                                        if(not temp1 and not temp2 and not temp3):
-                                            temp1 = True
-                                            temp = "temp"
-                                        elif(temp1):
-                                            temp = "temp"
-                                        elif(temp2):
-                                            temp = "temp2"
-                                        elif(temp3):
-                                            temp = "temp3"
-                                        elif(temp4):
-                                            temp = "temp4"
+                                    if(not temp1 and not temp2 and not temp3):
+                                        temp1 = True
+                                        temp = "temp"
+                                    elif(temp1):
+                                        temp = "temp"
+                                    elif(temp2):
+                                        temp = "temp2"
+                                    elif(temp3):
+                                        temp = "temp3"
+                                    elif(temp4):
+                                        temp = "temp4"
 
-                                        if(v == '*'):
-                                            if(isInt(postFix[fOI])):
-                                                if(isInt(postFix[sOI])):
-                                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
-                                                        "imul edi, {}\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                                else:
-                                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
-                                                        "imul edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
+                                    if(v == '*'):
+                                        if(isInt(postFix[fOI])):
+                                            if(isInt(postFix[sOI])):
+                                                fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                                    "imul edi, {}\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
                                             else:
-                                                if(isInt(postFix[sOI])):
-                                                    fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
-                                                        "imul edi, {}\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                                else:
-                                                    fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
-                                                        "imul edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                        elif(v == '+'):
-                                            if(isInt(postFix[fOI])):
-                                                if(isInt(postFix[sOI])):
-                                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
-                                                        "add edi, {}\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                                else:
-                                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
-                                                        "add edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
+                                                fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                                    "imul edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                        else:
+                                            if(isInt(postFix[sOI])):
+                                                fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
+                                                    "imul edi, {}\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
                                             else:
-                                                if(isInt(postFix[sOI])):
-                                                    fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
-                                                        "add edi, {}\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                                else:
-                                                    fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
-                                                        "add edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                        elif(v == '-'):
-                                            if(isInt(postFix[fOI])):
-                                                if(isInt(postFix[sOI])):
-                                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
-                                                        "sub edi, {}\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                                else:
-                                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
-                                                        "sub edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
+                                                fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
+                                                    "imul edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                    elif(v == '+'):
+                                        if(isInt(postFix[fOI])):
+                                            if(isInt(postFix[sOI])):
+                                                fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                                    "add edi, {}\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
                                             else:
-                                                if(isInt(postFix[sOI])):
-                                                    fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
-                                                        "sub edi, {}\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                                else:
-                                                    fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
-                                                        "sub edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                        "mov DWORD[{}], edi\n\n".format(temp))
-                                        elif(v == '^'):
-                                            if(isInt(postFix[fOI])):
-                                                if(isInt(postFix[sOI])):
-                                                    fo.write("xor edi, edi\n"+
-                                                            "mov eax, 0x00000001\n"+
-                                                            "_exp_top_{}:\n".format(Exp_Count)+
-                                                            "cmp edi, {}\n".format(postFix[sOI])+
-                                                            "jz _exp_out_{}\n".format(Exp_Count)+
-                                                            "imul eax, {}\n".format(postFix[fOI])+
-                                                            "inc edi\n"+
-                                                            "jmp _exp_top_{}\n".format(Exp_Count)+
-                                                            "_exp_out_{}:\n".format(Exp_Count)+
-                                                            "mov DWORD[{}], eax\n\n".format(temp))
-                                                else:
-                                                    fo.write("xor edi, edi\n"+
-                                                            "mov eax, 0x00000001\n"+
-                                                            "_exp_top_{}:\n".format(Exp_Count)+
-                                                            "cmp edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                            "jz _exp_out_{}\n".format(Exp_Count)+
-                                                            "imul eax, {}\n".format(postFix[fOI])+
-                                                            "inc edi\n"+
-                                                            "jmp _exp_top_{}\n".format(Exp_Count)+
-                                                            "_exp_out_{}:\n".format(Exp_Count)+
-                                                            "mov DWORD[{}], eax\n\n".format(temp))
+                                                fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                                    "add edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                        else:
+                                            if(isInt(postFix[sOI])):
+                                                fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
+                                                    "add edi, {}\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
                                             else:
-                                                if(isInt(postFix[sOI])):
-                                                    fp.write("xor edi, edi\n"+
-                                                            "mov eax, 0x00000001\n"+
-                                                            "_exp_top_{}:\n".format(Exp_Count)+
-                                                            "cmp edi, {}\n".format(postFix[sOI])+
-                                                            "jz _exp_out_{}\n".format(Exp_Count)+
-                                                            "imul eax, DWORD[{}]\n".format(postFix[fOI])+
-                                                            "inc edi\n"+
-                                                            "jmp _exp_top_{}\n".format(Exp_Count)+
-                                                            "_exp_out_{}:\n".format(Exp_Count)+
-                                                            "mov DWORD[{}], eax\n\n".format(temp))
-                                                else:
-                                                    fp.write("xor edi, edi\n"+
-                                                            "mov eax, 0x00000001\n"+
-                                                            "_exp_top_{}:\n".format(Exp_Count)+
-                                                            "cmp edi, DWORD[{}]\n".format(postFix[sOI])+
-                                                            "jz _exp_out_{}\n".format(Exp_Count)+
-                                                            "imul eax, DWORD[{}]\n".format(postFix[fOI])+
-                                                            "inc edi\n"+
-                                                            "jmp _exp_top_{}\n".format(Exp_Count)+
-                                                            "_exp_out_{}:\n".format(Exp_Count)+
-                                                            "mov DWORD[{}], eax\n\n".format(temp))
-                                            Exp_Count += 1
-                                        #This needs to happen at the end.
-                                        del postFix[fOI:index + 1]
-                                        postFix.insert(fOI,temp)
-                                        if(temp4):
-                                            temp1 = True
-                                            temp2 = False
-                                            temp3 = False
-                                            temp4 = False
-                                        elif(temp3):
-                                            temp1 = False
-                                            temp2 = False
-                                            temp3 = False
-                                            temp4 = True
-                                        elif(temp2):
-                                            temp3 = True
-                                            temp1 = False
-                                            temp2 = False
-                                            temp4 = False
-                                        elif(temp1):
-                                            temp1 = False
-                                            temp2 = True
-                                            temp3 = False
-                                            temp4 = False
+                                                fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
+                                                    "add edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                    elif(v == '-'):
+                                        if(isInt(postFix[fOI])):
+                                            if(isInt(postFix[sOI])):
+                                                fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                                    "sub edi, {}\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                            else:
+                                                fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                                    "sub edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                        else:
+                                            if(isInt(postFix[sOI])):
+                                                fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
+                                                    "sub edi, {}\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                            else:
+                                                fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
+                                                    "sub edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                    "mov DWORD[{}], edi\n\n".format(temp))
+                                    elif(v == '^'):
+                                        if(isInt(postFix[fOI])):
+                                            if(isInt(postFix[sOI])):
+                                                fo.write("xor edi, edi\n"+
+                                                        "mov eax, 0x00000001\n"+
+                                                        "_exp_top_{}:\n".format(Exp_Count)+
+                                                        "cmp edi, {}\n".format(postFix[sOI])+
+                                                        "jz _exp_out_{}\n".format(Exp_Count)+
+                                                        "imul eax, {}\n".format(postFix[fOI])+
+                                                        "inc edi\n"+
+                                                        "jmp _exp_top_{}\n".format(Exp_Count)+
+                                                        "_exp_out_{}:\n".format(Exp_Count)+
+                                                        "mov DWORD[{}], eax\n\n".format(temp))
+                                            else:
+                                                fo.write("xor edi, edi\n"+
+                                                        "mov eax, 0x00000001\n"+
+                                                        "_exp_top_{}:\n".format(Exp_Count)+
+                                                        "cmp edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                        "jz _exp_out_{}\n".format(Exp_Count)+
+                                                        "imul eax, {}\n".format(postFix[fOI])+
+                                                        "inc edi\n"+
+                                                        "jmp _exp_top_{}\n".format(Exp_Count)+
+                                                        "_exp_out_{}:\n".format(Exp_Count)+
+                                                        "mov DWORD[{}], eax\n\n".format(temp))
+                                        else:
+                                            if(isInt(postFix[sOI])):
+                                                fp.write("xor edi, edi\n"+
+                                                        "mov eax, 0x00000001\n"+
+                                                        "_exp_top_{}:\n".format(Exp_Count)+
+                                                        "cmp edi, {}\n".format(postFix[sOI])+
+                                                        "jz _exp_out_{}\n".format(Exp_Count)+
+                                                        "imul eax, DWORD[{}]\n".format(postFix[fOI])+
+                                                        "inc edi\n"+
+                                                        "jmp _exp_top_{}\n".format(Exp_Count)+
+                                                        "_exp_out_{}:\n".format(Exp_Count)+
+                                                        "mov DWORD[{}], eax\n\n".format(temp))
+                                            else:
+                                                fp.write("xor edi, edi\n"+
+                                                        "mov eax, 0x00000001\n"+
+                                                        "_exp_top_{}:\n".format(Exp_Count)+
+                                                        "cmp edi, DWORD[{}]\n".format(postFix[sOI])+
+                                                        "jz _exp_out_{}\n".format(Exp_Count)+
+                                                        "imul eax, DWORD[{}]\n".format(postFix[fOI])+
+                                                        "inc edi\n"+
+                                                        "jmp _exp_top_{}\n".format(Exp_Count)+
+                                                        "_exp_out_{}:\n".format(Exp_Count)+
+                                                        "mov DWORD[{}], eax\n\n".format(temp))
+                                        Exp_Count += 1
+                                    #This needs to happen at the end.
+                                    del postFix[fOI:index + 1]
+                                    postFix.insert(fOI,temp)
+                                    if(temp4):
+                                        temp1 = True
+                                        temp2 = False
+                                        temp3 = False
+                                        temp4 = False
+                                    elif(temp3):
+                                        temp1 = False
+                                        temp2 = False
+                                        temp3 = False
+                                        temp4 = True
+                                    elif(temp2):
+                                        temp3 = True
+                                        temp1 = False
+                                        temp2 = False
+                                        temp4 = False
+                                    elif(temp1):
+                                        temp1 = False
+                                        temp2 = True
+                                        temp3 = False
+                                        temp4 = False
 
-                                        break
-                                if(len(postFix) == 1):
-                                    postFix.pop()
-                            #fp.write("got here")
-                            if(postFix == []):
-                                fo.write("mov eax, DWORD[{}]\n".format(temp)+
-                                    "mov DWORD[{}], eax\n\n".format(varName))
-                        else:
-                            fo.write("mov DWORD[{}], {}\n".format(varName, rightSide))
+                                    break
+                            if(len(postFix) == 1):
+                                postFix.pop()
+                        #fp.write("got here")
+                        if(postFix == []):
+                            fo.write("mov eax, DWORD[{}]\n".format(temp)+
+                                "mov DWORD[{}], eax\n\n".format(varName))
                     else:
-                        if("*" in procedureVar):
-                            fo.write("mov DWORD[eax], {}\n".format(i.split(" ")[2][:-1]))
-                        else:
-                            fo.write("mov eax, {}\n".format(i.split(" ")[2]))
+                        fo.write("mov DWORD[{}], {}\n\n".format(varName, rightSide))
             elif(re.search(WRITE_STRING, i)):
                 strOut = i.split("\"")[1]
 
@@ -468,22 +460,10 @@ def run(fileIn, fileOut):
                                 "add esp, 0x08\n\n")
 
             elif(re.search(WRITE_VAR, i)):
-                if not procedure:
-                    fo.write("push DWORD[{}]\n".format(i.split(" ")[1][:-1])+
-                                "push numberPrinter\n"+
-                                "call _printf\n"+
-                                "add esp, 0x08\n\n")
-                else:
-                    if("*" in procedureVar):
-                        fo.write("push DWORD[eax]\n"+
-                                "push numberPrinter\n"+
-                                "call _printf\n"+
-                                "add esp, 0x08\n\n")
-                    else:
-                        fo.write("push eax\n"+
-                                "push numberPrinter\n"+
-                                "call _printf\n"+
-                                "add esp, 0x08\n\n")
+                fo.write("push DWORD[{}]\n".format(i.split(" ")[1][:-1])+
+                            "push numberPrinter\n"+
+                            "call _printf\n"+
+                            "add esp, 0x08\n\n")
 
             elif(re.search(READ_VAR, i)):
                 fo.write("pusha\n"+
@@ -609,11 +589,8 @@ def run(fileIn, fileOut):
                 print(procedureName)
                 #Writing label name for procedure
                 fo.write("{}:\n".format(procedureName))
-                fo.write("mov eax, DWORD[esp+4]\n"+
-                                 "pusha\n")
                 BLOCK_STACK.append(";END procedure\n"+
-                                   "popa\n"+
-                                   "ret\n")
+                                   "ret\n\n")
                 if(len(procedureData) == 5):
                     procedureVar = procedureData[3] + procedureData[4][:-1]
                 else:
@@ -631,17 +608,25 @@ def run(fileIn, fileOut):
                 
                 peeked = ""
                 bracketsIn -= 1
-            else:
+            else:#This is where I check if the instruction has the name of one of the procedures, therefore a procedure is being called.
                 for n in procedureNames:
                     if(n in i):
+                        #For now lets just use passin
+                        print("Procedure Found : {}".format(i))
+                        passedVariable = i.split("(")[1].strip().replace(" ", "")[:-2]
+                        print(passedVariable)
                         if(procedureNames[n] == "value"):
-                            fo.write("push DWORD[{}]\n".format(i.split("(")[1][:-4][1:])+
-                                 "call {}\n".format(n)+
-                                 "add 	esp, 0x04\n")
+                            fo.write("mov eax, DWORD[{}]\n".format(passedVariable)+
+                                "mov DWORD[passin], eax\n" +
+                                "call {}\n".format(n)+
+                                 "add 	esp, 0x04\n\n")
                         else:
-                            fo.write("push {}\n".format(i.split("(")[1][:-4][1:])+
-                                 "call {}\n".format(n)+
-                                 "add 	esp, 0x04\n")
+                            fo.write("mov eax, DWORD[{}]\n".format(passedVariable)+
+                                "mov DWORD[passin], eax\n" +
+                                "call {}\n".format(n)+
+                                 "add 	esp, 0x04\n"+
+                                 "mov eax, DWORD[passin]\n"+
+                                "mov DWORD[{}], eax\n\n".format(passedVariable))
         print(procedureNames)
 
         fo.write("exit:\n"+

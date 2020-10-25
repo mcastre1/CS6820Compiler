@@ -11,6 +11,7 @@ SETNUM_EQUALTO = "^num\s\w+.*"
 SETVAR_EQUALTO = "^\w+"
 WRITE_STRING = "^write\s\".*\";$"
 WRITE_VAR = "^write\s\w+;$"
+WRITE_ARRAY = "^write\s\w+\[.+\];$"
 READ_VAR = "^read\s\w+;$"
 FOR_LOOP = "^for.*"
 #List to keep track of errors.
@@ -60,7 +61,7 @@ def run(fileIn, fileOut):
     global procedureVar
     global procedureInstructions
     global p
-    
+
     """[Opens the fileIn path, reads every line, gets rid of comments, adds every line that is not equal to empty to the
     INSTRUCTIONS list, then reads through the INSTRUCTIOn list and converts every instruction to assembly code]
 
@@ -126,7 +127,6 @@ def run(fileIn, fileOut):
             variable = i.split(" ")[1][:-1]
             if(variable in VARS):
                 varType = VARS[variable].split(",")[1]
-                ##print(varType)
                 if(varType == "num" and not "numberPrinter" in VARS):
                         VARS["numberPrinter"] = "i,printer/,db \"%d\",0x0d,0x0a,0"
             if(not "_printf" in IMPORTS):
@@ -139,6 +139,12 @@ def run(fileIn, fileOut):
             #ONLY FOR INTEGERS, NEED TO CHANGE IN FUTURE
             if(not "int_format" in VARS):
                 VARS["int_format"] = "i,scanner/,db \"%i\", 0"
+        elif(re.search(WRITE_ARRAY, i)):
+            var = VARS[i.split(" ")[1].split("[")[0]]
+            if(not "numberPrinter" in VARS):
+                VARS["numberPrinter"] = "i,printer/,db \"%d\",0x0d,0x0a,0"
+            if(not "_printf" in IMPORTS):
+                IMPORTS["_printf"] = "extern"
         elif(i[0:2] == "if"):
             ifstack.append("if{}".format(ifcount))
             ifcount += 1
@@ -158,13 +164,13 @@ def run(fileIn, fileOut):
                     else:
                         procedureNames[name] = "value"
                         varName = i.split(" ")[3][:-1]
-                        
-                
+
+
                 #print(varName)
                 if(not varName in VARS):
                     varType = i.split(" ")[2][1:]
                     VARS[varName] = "u,{}".format(varType)
-                    
+
 
         elif(i == "}"):
             if(otherLoopsCount > 0):
@@ -176,8 +182,18 @@ def run(fileIn, fileOut):
             else:
                 ifstack.pop()
 
+        elif(re.search("array\s\w+\[(\-?\d+\.\.\-?\d+\,|\-?\d+\.\.\-?\d+)+\]\;", i)):
+            stringInput = i.lstrip().rstrip().split(" ")
+            variableName = stringInput[1].split("[")[0]
+            #ARRAY
+            #print("stringInput {} {}".format(stringInput[0], stringInput[1]))
+            #print(variableName)
+
+            if not variableName in VARS:
+                VARS[variableName] = "u,array," + stringInput[1][:-1]
+
     ifcount = 0
-    
+
 ############PRINTING OUT TO FILE OUT#############
     with open(fileOut, 'w') as fo:
         #Writing export header.
@@ -216,7 +232,6 @@ def run(fileIn, fileOut):
                     fo.write("{} {}\n".format(i,data[1]))
                 elif(data[1] == "str"):
                     fo.write("{} db {},0x0d,0x0a,0\n".format(data[2], i))
-
         fo.write("\n")
 
         fo.write(";-----------------------------\n"+
@@ -236,6 +251,16 @@ def run(fileIn, fileOut):
                     fo.write("{} resd 1\n".format(i))
                 elif(data[1] == "readnum"):
                     fo.write("{} resd 1\n".format(i))
+                elif(data[1] == "array"):
+                    numbers = VARS[i].split("[")[1][:-1]
+                    size = 1
+                    if("," in numbers):
+                        numberList = numbers.split(",")
+                        for n in numberList:
+                            temp = n.split("..")
+                            size = size * (int(temp[1]) - int(temp[0]) + 1)
+                        size = size * 4
+                        fo.write("{} resb {}\n".format(i, size))
 
         fo.write("\n")
 
@@ -251,7 +276,7 @@ def run(fileIn, fileOut):
         for i in INSTRUCTIONS:
             #This first if will check if the instruction is a set instruction for example var1 = var2 or var1 = var2 + 4, '=' being the important factor
             if(re.search(EQUALS, i) and not i[0:2] == "if" and not i[0:5] == "write"):
-                
+
                 leftSide = i.split("=")[0].strip()
                 rightSide = i.split("=")[1].strip()[:-1]
                 if(re.search(NUM_INITIALIZATION, i)):    #This will happen if theres a num \s var = something.
@@ -276,6 +301,41 @@ def run(fileIn, fileOut):
 
                             fo.write("mov edi, {}\n".format(rightSide)+
                                      "mov DWORD[{}], edi\n\n".format(varName))
+                #ARRAY
+                elif(re.search("\w+\[.+\]\s?=\s?.+\;", i)):
+                    ks = []  #Ks for each of the index bounds
+                    deltas = [] #deltas for each index
+                    lowerBounds = [] #lowerbounds of index, first number
+                    variable = i.split("[")[0] #Keeps track of the variable name we are accessing.
+                    value = i.split("=")[1][:-1][1:] #Keeps track of the value we are putting into the variable.
+
+                    ks = findKs(variable)
+                    lowerBounds = findLowerBounds(variable)
+                    deltas = findDeltas(ks)
+
+                    fo.write("xor edi, edi\n")
+                    indexes = leftSide.split("[")[1][:-1].split(",")
+
+                    for n in range(len(indexes)):
+                            fo.write("mov esi, {}\n".format(deltas[n])+
+                                     "imul esi, {}\n".format(indexes[n])+
+                                     "add edi, esi\n")
+
+                    reference = 0
+                    for r in range(len(indexes)):
+                        reference = reference + int(indexes[r]) * int(deltas[r])
+                    #Relocation Factor
+                    #Lower bound is the first number in (#)..# and then the delta
+                    #Formula is lowerbound * delta both should be in the same array index 0 lowerbound * 0 delta + 1 lowerbound * 1 delta, and so on.
+                    relFactor = findFactors(deltas, lowerBounds)
+                    offset = reference - relFactor
+
+                    fo.write("sub edi, {}\n".format(relFactor)+
+                            "imul edi, 4\n"+
+                            "add edi, {}\n".format(variable)+
+                            "mov	DWORD[edi],	{}\n".format(value))
+
+                #var = something
                 elif(re.search(SETVAR_EQUALTO, leftSide)):
                     global Exp_Count
                     global forLoopCount
@@ -450,7 +510,6 @@ def run(fileIn, fileOut):
                         fo.write("mov DWORD[{}], {}\n\n".format(varName, rightSide))
             elif(re.search(WRITE_STRING, i)):
                 strOut = i.split("\"")[1]
-
                 #print(strOut)
                 #check for valid stringvariable ???
                 strVarName = VARS["\"{}\"".format(strOut)].split(",")[2]
@@ -459,11 +518,48 @@ def run(fileIn, fileOut):
                                 "call _printf\n"+
                                 "add esp, 0x08\n\n")
 
+            elif(re.search(WRITE_ARRAY, i)):
+                ks = []  #Ks for each of the index bounds
+                deltas = [] #deltas for each index
+                lowerBounds = [] #lowerbounds of index, first number
+
+                variable = i.split("[")[0].split(" ")[1] #Keeps track of the variable name we are accessing.
+                ks = findKs(variable)
+                lowerBounds = findLowerBounds(variable)
+                deltas = findDeltas(ks)
+                relFactor = findFactors(deltas, lowerBounds)
+
+                fo.write("xor edi, edi\n")
+                indexes = i.split(" ")[1].split("[")[1][:-2].split(",")
+
+                for n in range(len(indexes)):
+                    fo.write("mov esi, {}\n".format(deltas[n])+
+                            "imul esi, {}\n".format(indexes[n])+
+                            "add edi, esi\n")
+
+                fo.write("sub edi, {}\n".format(relFactor)+
+                        "imul edi, 4\n"+
+                        "add edi, {}\n".format(variable)+
+                        "push	DWORD[edi]\n"+
+                        "push numberPrinter\n"+
+                        "call _printf\n"+
+                        "add esp, 0x08\n")
+
+                print("-----------------")
+                print(variable)
+                print(ks)
+                print(lowerBounds)
+                print(deltas)
+                print(relFactor)
+                print(indexes)
+                print("-------------------")
+
+
             elif(re.search(WRITE_VAR, i)):
                 fo.write("push DWORD[{}]\n".format(i.split(" ")[1][:-1])+
-                            "push numberPrinter\n"+
-                            "call _printf\n"+
-                            "add esp, 0x08\n\n")
+                        "push numberPrinter\n"+
+                        "call _printf\n"+
+                        "add esp, 0x08\n\n")
 
             elif(re.search(READ_VAR, i)):
                 fo.write("pusha\n"+
@@ -582,10 +678,10 @@ def run(fileIn, fileOut):
             elif(i[0:9] == "procedure"):
                 if(procedureCount == maxProcedureCount):
                     fo.write("jmp afterprocedures\n")
-                    
+
                 procedureData = i.split(" ")
                 procedureName = procedureData[1]
-                
+
                 print(procedureName)
                 #Writing label name for procedure
                 fo.write("{}:\n".format(procedureName))
@@ -605,7 +701,7 @@ def run(fileIn, fileOut):
                     procedure = False
                     if(procedureCount == 0):
                         fo.write("afterprocedures:\n")
-                
+
                 peeked = ""
                 bracketsIn -= 1
             else:#This is where I check if the instruction has the name of one of the procedures, therefore a procedure is being called.
@@ -697,11 +793,45 @@ def isInt(x):
     except ValueError:
         return False
 
+def findKs(v):
+    """findKs will return a list with all the ks found through an array variable."""
+    temp = []
+    for j in VARS[v].split("[")[1][:-1].split(","):
+        num1 = j.split("..")[0]
+        num2 = j.split("..")[1]
+        temp.append(int(num2)-int(num1) + 1)
+    return temp
+
+def findDeltas(ks):
+    """findDeltas will return the delta values calculated with the help of ks"""
+    tempList = []
+    for x in range(len(ks)):
+        temp = 1
+        for y in range(x+1, len(ks)):
+            temp = temp * ks[y]
+        tempList.append(temp)
+    return tempList
+
+def findFactors(deltas, lowerBounds):
+    """findFactors will calculate and return the factor number using deltas and lowerBounds"""
+    relFactor = 0
+    for dn in range(len(deltas)):
+        relFactor = relFactor + int(deltas[dn]) * int(lowerBounds[dn])
+    return relFactor
+
+def findLowerBounds(v):
+    """findLowerBounds will retrieve and return a list of all indexes being accessed in an array such as 1, 2, 3 from array[1,2,3]"""
+    temp = []
+    for j in VARS[v].split("[")[1][:-1].split(","):
+        num = j.split("..")[0]
+        temp.append(num)
+    return temp
+
 def main():
     """[Sets the fileIn and fileOut string to the specified one, checks if there is a file with the fileIn path,
     and runs the run() function by passing both file paths in.]
     """
-    fileName = "procedureTry"
+    fileName = "arrayStatement"
     fileIn = "./" + fileName + ".txt"
     fileOut = "./" + fileName + ".asm"
 
