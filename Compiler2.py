@@ -6,8 +6,11 @@ import parsing
 
 NUM_DECLARATION = "^num\s\w+;$"
 NUM_INITIALIZATION = "^num\s\w+\s=\s.*;$"
+STRING_DECLARATION = "^string\s\w+;$"
+STRING_INITIALIZATION = "^string\s\w+\s=\s.*;$"
 EQUALS = "^.*=.*;$"
 SETNUM_EQUALTO = "^num\s\w+.*"
+SETSTRING_EQUALTO = "^string\s\w+.*"
 SETVAR_EQUALTO = "^\w+"
 WRITE_STRING = "^write\s\".*\";$"
 WRITE_VAR = "^write\s\w+;$"
@@ -37,6 +40,7 @@ maxProcedureCount = 0
 procedure = False
 procedureVar = ""
 procedureNames = {}
+stringCount = 0
 procedureInstructions = [2]  #Number of procedures... this is a very hacky way of doing this, but it works. 
 p = 0
 
@@ -50,6 +54,7 @@ strVarCount = 0
 forLoopCount = 0
 
 def run(fileIn, fileOut):
+    global stringCount
     global ifcount
     global otherLoopsCount
     global caseCount
@@ -98,6 +103,7 @@ def run(fileIn, fileOut):
     #For loop for adding correct spaces on all instructions.
     for i in range(len(INSTRUCTIONS)):
         INSTRUCTIONS[i] = parsing.fixSpacing(INSTRUCTIONS[i])
+        print(INSTRUCTIONS[i])
 
     #Moving Solo Brackets one instruction up.
     for i,v in enumerate(INSTRUCTIONS):
@@ -115,6 +121,12 @@ def run(fileIn, fileOut):
         #print(i)
         if(re.search(NUM_DECLARATION, i)):
             createVariable(i)
+        elif(re.search(STRING_DECLARATION, i)):
+            varName = i.split(" ")[1][:-1]
+            pointer = f"stringPoint{stringCount}"
+            VARS[varName] = f"u,string,'',{pointer}"
+            VARS[pointer] = "i,string,\" \""
+            stringCount += 1
         elif(re.search(EQUALS, i) and not i[0:2] == "if" and not i[0:5] == "write"):
             equalsFunction(i)
         elif(re.search(WRITE_STRING, i)):
@@ -194,6 +206,8 @@ def run(fileIn, fileOut):
 
     ifcount = 0
 
+    print(VARS)
+
 ############PRINTING OUT TO FILE OUT#############
     with open(fileOut, 'w') as fo:
         #Writing export header.
@@ -232,6 +246,9 @@ def run(fileIn, fileOut):
                     fo.write("{} {}\n".format(i,data[1]))
                 elif(data[1] == "str"):
                     fo.write("{} db {},0x0d,0x0a,0\n".format(data[2], i))
+                elif(data[1] == "string"):
+                    fo.write("{} db {},0x0d,0x0a,0\n".format(i,VARS[i].split(",")[2]))
+                    print(VARS[i])
         fo.write("\n")
 
         fo.write(";-----------------------------\n"+
@@ -261,6 +278,8 @@ def run(fileIn, fileOut):
                             size = size * (int(temp[1]) - int(temp[0]) + 1)
                         size = size * 4
                         fo.write("{} resb {}\n".format(i, size))
+                elif(data[1] == "string"):
+                    fo.write(f"{i} resb 128\n")
 
         fo.write("\n")
 
@@ -742,10 +761,17 @@ def getJump(op):
         return "jle"
 
 def equalsFunction(i):
+    global stringCount
     instruction = i.split("=")
     instruction[0] = instruction[0].strip()
     instruction[1] = instruction[1].strip()
 
+    if(re.search(SETSTRING_EQUALTO, instruction[0])):
+        varname = instruction[0].split(" ")[1]
+        pointer = f"stringPoint{stringCount}"
+        VARS[varname] = f"u,string,{instruction[1][:-1]},{pointer}"
+        VARS[pointer] = f"i,string,{instruction[1][:-1]}"
+        stringCount += 1
     if(re.search(SETNUM_EQUALTO,instruction[0])):
         #print("in")
         #if('+' in instruction[1] or '-' in instruction[1] or '*' in instruction[1] or '^' in instruction[1]):
@@ -831,7 +857,7 @@ def main():
     """[Sets the fileIn and fileOut string to the specified one, checks if there is a file with the fileIn path,
     and runs the run() function by passing both file paths in.]
     """
-    fileName = "arrayStatement"
+    fileName = "stringsConcat"
     fileIn = "./" + fileName + ".txt"
     fileOut = "./" + fileName + ".asm"
 
@@ -840,6 +866,8 @@ def main():
         sys.exit()
     else:
         run(fileIn, fileOut)
+        
+    print(VARS)
 
 if __name__ == '__main__':
     main()

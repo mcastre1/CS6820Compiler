@@ -1,0 +1,8 @@
+program StringsConcat;
+begin
+  string first = "James";
+  string last = " Bond";
+  string fullName;
+  fullName = first + last;
+  write fullName;
+end.
