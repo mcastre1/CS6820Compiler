@@ -100,7 +100,13 @@ def run(fileIn, fileOut):
                 lineN = line.strip()
 
             if(not lineN == ""):
-                INSTRUCTIONS.append(lineN.lower())
+                if("\"" in lineN):
+                    str1 = lineN.split("\"")[0]
+                    str2 = lineN.split("\"")[1]
+                    strout = str1.lower() + "\"" + str2 + "\";"
+                    INSTRUCTIONS.append(strout)
+                else:
+                    INSTRUCTIONS.append(lineN.lower())
 
     #For loop for adding correct spaces on all instructions.
     for i in range(len(INSTRUCTIONS)):

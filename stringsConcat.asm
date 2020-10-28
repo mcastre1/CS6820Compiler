@@ -14,8 +14,8 @@ extern _printf
 ; Initialiazed vars
 ;-----------------------------
 section .data USE32
-stringPoint0 db "james",0x0d,0x0a,0
-stringPoint1 db " bond",0x0d,0x0a,0
+stringPoint0 db "James",0x0d,0x0a,0
+stringPoint1 db " Bond",0x0d,0x0a,0
 stringPoint2 db "",0x0d,0x0a,0
 stringPrinter db "%s",0
 
@@ -38,7 +38,7 @@ section .code USE32
 _main:
 
 ;STRING ASSIGNMENT 
-;string first = "james";
+;string first = "James";
 mov ecx, 0
 cld
 mov esi, stringPoint0
@@ -50,7 +50,7 @@ movsb
 loop copy0
 
 ;STRING ASSIGNMENT 
-;string last = " bond";
+;string last = " Bond";
 mov ecx, 0
 cld
 mov esi, stringPoint1
