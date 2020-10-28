@@ -213,6 +213,9 @@ def run(fileIn, fileOut):
 
             if not variableName in VARS:
                 VARS[variableName] = "u,array," + stringInput[1][:-1]
+                
+        elif("[" in i and "]" in i and ("+" in i or "-" in i or "*" in i or "(" in i or ")" in i)):
+            print("FOUND array subscript")
 
     ifcount = 0
 
@@ -353,14 +356,31 @@ def run(fileIn, fileOut):
                     lowerBounds = [] #lowerbounds of index, first number
                     variable = i.split("[")[0] #Keeps track of the variable name we are accessing.
                     value = i.split("=")[1][:-1][1:] #Keeps track of the value we are putting into the variable.
-
+                    if(not isInt(value)):
+                        value = VARS[value].split(",")[2]
+                        
                     ks = findKs(variable)
                     lowerBounds = findLowerBounds(variable)
                     deltas = findDeltas(ks)
 
                     fo.write("xor edi, edi\n")
+                    
+                    for i in VARS:  #With this I can change all the num variables in a subscripting for its actual value.
+                        if(VARS[i].split(",")[0] == "i" and VARS[i].split(",")[1] == "num"):
+                            leftSide = leftSide.replace(i, VARS[i].split(",")[2])
+
                     indexes = leftSide.split("[")[1][:-1].split(",")
 
+                    for i, ind in enumerate(indexes):
+                        indexValue = 0
+                        if(not isInt(ind)):
+                            indexValue = eval(ind)
+                        else:
+                            indexValue = ind
+                        indexes[i] = indexValue
+                    
+                    print(indexes)
+                    
                     for n in range(len(indexes)):
                             fo.write("mov esi, {}\n".format(deltas[n])+
                                      "imul esi, {}\n".format(indexes[n])+
@@ -950,7 +970,7 @@ def main():
     """[Sets the fileIn and fileOut string to the specified one, checks if there is a file with the fileIn path,
     and runs the run() function by passing both file paths in.]
     """
-    fileName = "stringsConcat"
+    fileName = "arraySubscripting"
     fileIn = "./" + fileName + ".txt"
     fileOut = "./" + fileName + ".asm"
 

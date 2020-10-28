@@ -56,6 +56,13 @@ def fixSpacing(InstSTR):
             inst = inst.replace(")", " )")
         elif(inst[indOcu - 1] == " " and not inst[indOcu + 1] == " "):
             inst = inst.replace(")", ") ")
+    if("[" in inst and not "switch" in inst and not "procedure" in inst):
+        indOcu = inst.find("[")
+        if( inst[indOcu - 1] == " "):
+            inst = inst.replace(" [", "[")
+    if("[" in inst and ".." in inst and not "switch" in inst and not "procedure" in inst):
+        inst = inst.replace(" ", "")
+        inst = inst.replace("array", "array ")
     
     return inst
 

@@ -1,0 +1,10 @@
+program subscript;
+	begin
+		array bob[1..10, 3..20, 2..10];
+		num num1 = 3;
+		num num2 = 4;
+		bob [2,5,8] = num1;
+                write bob[2,5,8];
+		bob [num1, num2, ( num1 + ( num2 * 9 ) )] = 10;
+                write bob[3,4,39];
+	end.
