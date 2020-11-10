@@ -1,0 +1,54 @@
+program floatingpoint;
+begin
+  num num1 = 2;
+  num num2 = 3;
+  num result = num1 + num2;
+  write result;
+  write "num1(2) + num2(3) = 5"
+
+  float float1 = 2.5;
+  float fResult = float1 + num1;
+  write fResult;
+  write "float1(2.5) + num1(2) = 4.5";
+
+  fResult = num1 + float1;
+  write fResult;
+  write "num1(2) + float1(2.5) = 4.5";
+
+  float float2 = 3.5;
+  fResult = float1 + float2;
+  write fResult;
+  write "float1(2.5) + float2(3.5) = 6.0";
+  
+  result = num2 - num1;
+  write result;
+  write "num2(3) - num1(2) = 1";
+
+  fResult = num2 - float1;
+  write fResult;
+  write "num2(3) - float1(2.5) = 0.5";
+
+  fResult = float2 - num1;
+  write fResult;
+  write "float2(3.5) - num1(2) = 1.5";
+
+  fResult = float2 - float1;
+  write fResult;
+  write "float2(3.5) - float1(2.5) = 1.0";
+
+  result = num1 * num2;
+  write result;
+  write "num1(2) * num2(3) = 6";
+
+  fResult = num1 * float1;
+  write fResult;
+  write "num1(2) * float1(2.5) = 5.0";
+
+  fResult = float1 * num1;
+  write fResult;
+  write "float1(2.5) * num1(2) = 5.0";
+
+  fResult = float1 * float2;
+  write fResult;
+  write "float1(2.5) * float2(3.5) = 8.75";
+end.

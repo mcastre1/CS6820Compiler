@@ -11,5 +11,4 @@ program SampleAE;
 		result = 3 ^ Y + (67 - 34) - 77 * 2 ^ Y;
 		write result;
 		result = 3 ^ Y + (67 - 34) - 77 * 2 ^ Y * -1;
-		write result;
 	end.
