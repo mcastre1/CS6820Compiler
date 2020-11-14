@@ -18,21 +18,21 @@ format_float: db "%f", 10, 0
 num1 dd 2
 num2 dd 3
 numberPrinter db "%d",0x0d,0x0a,0
-s0 db "num1 ( 2 ) + num2 ( 3 ) = 5",0x0d,0x0a,0
+s0 db "num1(2) + num2(3) = 5",0x0d,0x0a,0
 stringPrinter db "%s",0
 float1 dd 2.5
-s1 db "float1 ( 2.5 ) + num1 ( 2 ) = 4.5",0x0d,0x0a,0
-s2 db "num1 ( 2 ) + float1 ( 2.5 ) = 4.5",0x0d,0x0a,0
+s1 db "float1(2.5) + num1(2) = 4.5",0x0d,0x0a,0
+s2 db "num1(2) + float1(2.5) = 4.5",0x0d,0x0a,0
 float2 dd 3.5
-s3 db "float1 ( 2.5 ) + float2 ( 3.5 ) = 6.0",0x0d,0x0a,0
-s4 db "num2 ( 3 ) - num1 ( 2 ) = 1",0x0d,0x0a,0
-s5 db "num2 ( 3 ) - float1 ( 2.5 ) = 0.5",0x0d,0x0a,0
-s6 db "float2 ( 3.5 ) - num1 ( 2 ) = 1.5",0x0d,0x0a,0
-s7 db "float2 ( 3.5 ) - float1 ( 2.5 ) = 1.0",0x0d,0x0a,0
-s8 db "num1 ( 2 ) * num2 ( 3 ) = 6",0x0d,0x0a,0
-s9 db "num1 ( 2 ) * float1 ( 2.5 ) = 5.0",0x0d,0x0a,0
-s10 db "float1 ( 2.5 ) * num1 ( 2 ) = 5.0",0x0d,0x0a,0
-s11 db "float1 ( 2.5 ) * float2 ( 3.5 ) = 8.75",0x0d,0x0a,0
+s3 db "float1(2.5) + float2(3.5) = 6.0",0x0d,0x0a,0
+s4 db "num2(3) - num1(2) = 1",0x0d,0x0a,0
+s5 db "num2(3) - float1(2.5) = 0.5",0x0d,0x0a,0
+s6 db "float2(3.5) - num1(2) = 1.5",0x0d,0x0a,0
+s7 db "float2(3.5) - float1(2.5) = 1.0",0x0d,0x0a,0
+s8 db "num1(2) * num2(3) = 6",0x0d,0x0a,0
+s9 db "num1(2) * float1(2.5) = 5.0",0x0d,0x0a,0
+s10 db "float1(2.5) * num1(2) = 5.0",0x0d,0x0a,0
+s11 db "float1(2.5) * float2(3.5) = 8.75",0x0d,0x0a,0
 
 ;-----------------------------
 ; Unitialiazed vars

@@ -18,8 +18,6 @@ format_float: db "%f", 10, 0
 x dd 3
 y dd 4
 z dd 5
-s0 db "ae.txt:",0x0d,0x0a,0
-stringPrinter db "%s",0
 numberPrinter db "%d",0x0d,0x0a,0
 
 ;-----------------------------
@@ -30,6 +28,7 @@ temp resd 1
 temp2 resd 1
 temp3 resd 1
 temp4 resd 1
+bs resd 1
 result resd 1
 
 ;-----------------------------
@@ -47,26 +46,13 @@ mov DWORD[y], edi
 mov edi, 5
 mov DWORD[z], edi
 
-mov DWORD[result], 60
+mov DWORD[bs], 3
+shl DWORD[bs], 5
+mov edi, DWORD[bs]
+mov DWORD[temp], edi
 
-push s0
-push stringPrinter
-call _printf
-add esp, 0x08
-
-push DWORD[result]
-push numberPrinter
-call _printf
-add esp, 0x08
-
-mov DWORD[result], -556
-
-push DWORD[result]
-push numberPrinter
-call _printf
-add esp, 0x08
-
-mov DWORD[result], -1118
+mov eax, DWORD[temp]
+mov DWORD[result], eax
 
 push DWORD[result]
 push numberPrinter

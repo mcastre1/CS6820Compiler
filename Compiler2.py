@@ -3,6 +3,7 @@ import os
 import re
 import cPostFix
 import parsing
+import math
 
 NUM_DECLARATION = "^num\s\w+;$"
 NUM_INITIALIZATION = "^num\s\w+\s=\s.*;$"
@@ -48,10 +49,12 @@ stringCount = 0
 procedureInstructions = [2]  #Number of procedures... this is a very hacky way of doing this, but it works. 
 p = 0
 
-#OPTIMIZATIONS
-constPropagation = True
-constFolding = True
-deadCode = True
+########OPTIMIZATIONS##########
+constPropagation = False
+constFolding = False
+deadCode = False
+peepMult = True
+###############################
 
 IMPORTS = {"_ExitProcess@4" : "extern"}
 INSTRUCTIONS = []
@@ -123,7 +126,8 @@ def run(fileIn, fileOut):
 
     #For loop for adding correct spaces on all instructions.
     for i in range(len(INSTRUCTIONS)):
-        INSTRUCTIONS[i] = parsing.fixSpacing(INSTRUCTIONS[i])
+        if(not "write" in INSTRUCTIONS[i]):
+            INSTRUCTIONS[i] = parsing.fixSpacing(INSTRUCTIONS[i])
 
     #Moving Solo Brackets one instruction up.
     for i,v in enumerate(INSTRUCTIONS):
@@ -309,6 +313,9 @@ def run(fileIn, fileOut):
         "temp2 resd 1\n"+
         "temp3 resd 1\n"+
         "temp4 resd 1\n")
+        
+        if(peepMult):
+            fo.write("bs resd 1\n")
 
         #Writing out Unitialized variables
         for i in VARS:
@@ -345,7 +352,6 @@ def run(fileIn, fileOut):
         maxProcedureCount = procedureCount
 
         for i in INSTRUCTIONS:
-            print(i)
             #This first if will check if the instruction is a set instruction for example var1 = var2 or var1 = var2 + 4, '=' being the important factor
             if(re.search(EQUALS, i) and not i[0:2] == "if" and not i[0:5] == "write"):
 
@@ -476,8 +482,6 @@ def run(fileIn, fileOut):
                             "imul edi, 4\n"+
                             "add edi, {}\n".format(variable)+
                             "mov	DWORD[edi],	{}\n".format(value))
-
-                #var = something
                 
                 elif((re.search(SETVAR_EQUALTO, leftSide) or re.search(SETTYPEVAR_EQUALTO, leftSide)) and not "string" in leftSide):
                     if(constPropagation):
@@ -818,19 +822,65 @@ def aEPrint(i, rightSide, fo):
 
                         if(v == '*'):
                             if(isInt(postFix[fOI])):
+                                #Both are int
                                 if(isInt(postFix[sOI])):
-                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                    if(not peepMult):
+                                        fo.write("mov edi, {}\n".format(postFix[fOI])+
                                         "imul edi, {}\n".format(postFix[sOI])+
                                         "mov DWORD[{}], edi\n\n".format(temp))
+                                    else: #Under this else we have PeepHole Multiplication optimizations, only for 2 integers.
+                                        print("mult")
+                                        #Both are powers of 2
+                                        if(isBaseTwo(postFix[fOI]) and isBaseTwo(postFix[sOI])):
+                                            shamt = getShamt(postFix[sOI])
+                                            fo.write(f"mov DWORD[bs], {postFix[fOI]}\n"+
+                                                 f"shl DWORD[bs], {shamt}\n"+
+                                                 f"mov edi, DWORD[bs]\n" +
+                                                 f"mov DWORD[{temp}], edi\n\n")
+                                        #First is power of 2
+                                        elif(isBaseTwo(postFix[fOI])):
+                                            shamt = getShamt(postFix[fOI])
+                                            fo.write(f"mov DWORD[bs], {postFix[sOI]}\n"+
+                                                 f"shl DWORD[bs], {shamt}\n"+
+                                                 f"mov edi, DWORD[bs]\n" +
+                                                 f"mov DWORD[{temp}], edi\n\n")
+                                        #Second is power of 2
+                                        elif(isBaseTwo(postFix[sOI])):
+                                            shamt = getShamt(postFix[sOI])
+                                            fo.write(f"mov DWORD[bs], {postFix[fOI]}\n"+
+                                                 f"shl DWORD[bs], {shamt}\n"+
+                                                 f"mov edi, DWORD[bs]\n" +
+                                                 f"mov DWORD[{temp}], edi\n\n")
+                                #First is int
                                 else:
-                                    fo.write("mov edi, {}\n".format(postFix[fOI])+
+                                    if(not peepMult):
+                                        fo.write("mov edi, {}\n".format(postFix[fOI])+
                                         "imul edi, DWORD[{}]\n".format(postFix[sOI])+
                                         "mov DWORD[{}], edi\n\n".format(temp))
+                                    else:
+                                        if(isBaseTwo(postFix[fOI])):
+                                            shamt = getShamt(postFix[fOI])
+                                            fo.write(f"mov edi, DWORD[{postFix[sOI]}]\n"+
+                                                     f"mov DWORD[bs], edi\n"+
+                                                     f"shl DWORD[bs], {shamt}\n"+
+                                                     f"mov edi, DWORD[bs]\n"+
+                                                     f"mov DWORD[{temp}], edi\n\n")
                             else:
+                                #second is int
                                 if(isInt(postFix[sOI])):
-                                    fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
+                                    if(not peepMult):
+                                        fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
                                         "imul edi, {}\n".format(postFix[sOI])+
                                         "mov DWORD[{}], edi\n\n".format(temp))
+                                    else:
+                                        if(isBaseTwo(postFix[sOI])):
+                                            shamt = getShamt(postFix[sOI])
+                                            fo.write(f"mov edi, DWORD[{postFix[fOI]}]\n"+
+                                                     f"mov DWORD[bs], edi\n"+
+                                                     f"shl DWORD[bs], {shamt}\n"+
+                                                     f"mov edi, DWORD[bs]\n"+
+                                                     f"mov DWORD[{temp}], edi\n\n")
+                                #none are int
                                 else:
                                     fo.write("mov edi, DWORD[{}]\n".format(postFix[fOI])+
                                         "imul edi, DWORD[{}]\n".format(postFix[sOI])+
@@ -997,7 +1047,6 @@ def createSTRVar(i):
     instruction = i.split("\"")
     varType = "str"
     varName = "\"{}\"".format(instruction[1])
-    print(i)
     if(not varName in VARS):
         VARS[varName] = "i,{},s{}".format(varType,strVarCount)
         strVarCount += 1
@@ -1058,11 +1107,29 @@ def findLowerBounds(v):
         temp.append(num)
     return temp
 
+def bitShift(left, right):
+    if((right & (right-1) == 0) and right != 0):
+        print("power of 2")
+        times = math.sqrt(right)
+        print("Times: {}".format(times))
+        shifted = left << int(times)
+        print("Result = {}".format(shifted))
+
+def getShamt(n):
+    return "{}".format(int(math.sqrt(int(n))))
+
+def isBaseTwo(n):
+    temp = int(n)
+    if((temp & (temp-1) == 0) and temp != 0):
+        return True
+    else:
+        return False
+
 def main():
     """[Sets the fileIn and fileOut string to the specified one, checks if there is a file with the fileIn path,
     and runs the run() function by passing both file paths in.]
     """
-    fileName = "floatingpoint"
+    fileName = "peepholemult"
     fileIn = "./" + fileName + ".txt"
     fileOut = "./" + fileName + ".asm"
 
@@ -1071,8 +1138,6 @@ def main():
         sys.exit()
     else:
         run(fileIn, fileOut)
-        
-    print(VARS)
 
 if __name__ == '__main__':
     main()

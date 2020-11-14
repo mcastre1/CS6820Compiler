@@ -4,6 +4,7 @@ program SampleAE;
 		num Y = 4;
 		num Z = 5;
 		num result = X * Y * Z;
+		num fold = 2 + 4;
 		write "ae.txt:";
 		write result;
 		result = 3 ^ X + (67 - 34) - 77 * 2 ^ X;

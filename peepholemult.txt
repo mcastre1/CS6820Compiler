@@ -1,0 +1,9 @@
+program SampleAE;
+	begin
+		num X = 3;
+		num Y = 4;
+		num Z = 5;
+        num result;
+        result = 32 * 3;
+        write result;
+	end.
