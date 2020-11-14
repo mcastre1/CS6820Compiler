@@ -53,7 +53,8 @@ p = 0
 constPropagation = False
 constFolding = False
 deadCode = False
-peepMult = True
+peepMult = False
+peepRemoveAddMul = True
 ###############################
 
 IMPORTS = {"_ExitProcess@4" : "extern"}
@@ -167,6 +168,11 @@ def run(fileIn, fileOut):
                     index -= 1
             index += 1
 
+    #PeepHole remove useless instructions. Add/Sub by 0, Mult by 1
+    if(peepRemoveAddMul):
+        for i in range(len(INSTRUCTIONS)):
+            INSTRUCTIONS[i] = peepRemove(INSTRUCTIONS[i])
+            
     #creating variables
     for v, i in enumerate(INSTRUCTIONS):
         if(re.search(NUM_DECLARATION, i)):
@@ -1124,12 +1130,24 @@ def isBaseTwo(n):
         return True
     else:
         return False
+    
+def peepRemove(inst):
+    inst = inst.replace(" + 0", "")
+    inst = inst.replace(" 0 +", "")
+    inst = inst.replace(" - 0", "")
+    inst = inst.replace(" 0 -", "")
+    
+    inst = inst.replace(" * 1", "")
+    inst = inst.replace(" 1 *", "")
+
+    return inst
+
 
 def main():
     """[Sets the fileIn and fileOut string to the specified one, checks if there is a file with the fileIn path,
     and runs the run() function by passing both file paths in.]
     """
-    fileName = "peepholemult"
+    fileName = "peepholeremove"
     fileIn = "./" + fileName + ".txt"
     fileOut = "./" + fileName + ".asm"
 
